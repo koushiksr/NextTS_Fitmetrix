@@ -6,7 +6,10 @@ import { getRole } from '@/app/api/auth/getUserRoles';
 import { checkEmail } from '@/app/api/auth/getUserRoles';
 // import { connectDB } from '@/lib/mongodb';
 // import bcrypt from 'bcryptjs';
-import CredentialsProvider from 'next-auth/providers/credentials';
+import Credentials from "next-auth/providers/credentials"
+import { saltAndHashPassword } from '@/lib/password';
+import { getUserFromDb } from '@/lib/verifyUser';
+
 // import User from '@/models/user';
 
 export const { handlers, auth } = NextAuth({
@@ -28,28 +31,36 @@ export const { handlers, auth } = NextAuth({
     }),
     Twitter,
     GitHub,
-    // ✅ Email/Password Login Provider
-    CredentialsProvider({
-      name: 'Credentials',
+   Credentials({
+      // You can specify which fields should be submitted, by adding keys to the `credentials` object.
+      // e.g. domain, username, password, 2FA token, etc.
       credentials: {
-        email: { label: 'Email', type: 'email', placeholder: 'example@mail.com' },
-        password: { label: 'Password', type: 'password' },
+        email: {},
+        password: {},
       },
-      // async authorize(credentials) {
-      //   await connectDB();
-      //   console.log('credentials------------------');
-      //   console.log(await User.find());
 
-      //   const user = await User.findOne({ email: credentials?.email });
-      //   if (!user) throw new Error('No user found');
 
-      //   const isValid = await bcrypt.compare(credentials!.password as string, user.password as string);
-      //   if (!isValid) throw new Error('Invalid password');
 
-      //   return user;
-      // },
-    }),
-  ],
+      authorize: async (credentials:{email:string,password:string}) => {
+        let user = null
+ 
+        // logic to salt and hash password
+        const pwHash = saltAndHashPassword(credentials.password )
+ 
+        // logic to verify if the user exists
+        user = await getUserFromDb(credentials.email, pwHash)
+ 
+        if (!user) {
+          // No user found, so this is their first attempt to login
+          // Optionally, this is also the place you could do a user registration
+          throw new Error("Invalid credentials.")
+        }
+ 
+        // return user object with their profile data
+        return user
+      },
+    }),  
+  ],  
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
