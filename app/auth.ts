@@ -1,80 +1,47 @@
 import NextAuth from 'next-auth';
 import Google from 'next-auth/providers/google';
-import Twitter from 'next-auth/providers/twitter';
-import GitHub from 'next-auth/providers/github';
-import { getRole } from '@/app/api/auth/getUserRoles';
-import { checkEmail } from '@/app/api/auth/getUserRoles';
-// import { connectDB } from '@/lib/mongodb';
-// import bcrypt from 'bcryptjs';
-import Credentials from "next-auth/providers/credentials"
-import { saltAndHashPassword } from '@/lib/password';
-import { getUserFromDb } from '@/lib/verifyUser';
+import { getRole, verifyCredentials } from './api/auth/getUserRoles';
+import Credentials from 'next-auth/providers/credentials';
+import axios from 'axios';
 
-// import User from '@/models/user';
-
-export const { handlers, auth } = NextAuth({
+export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
-    Google({
-      profile: (profile) => {
-        if (checkEmail(profile.email)) {
-          const role = checkEmail(profile.email) ? getRole(profile.email) : 'guest';
-          return {
-            ...profile,
-            role,
-            image: profile.picture,
-            name: profile.name,
-            email: profile.email,
-            id: profile.id,
-          };
+    Google,
+    Credentials({
+      id: 'credentials',
+      name: 'Credentials',
+      credentials: {
+        username: { label: 'Username' },
+        password: { label: 'Password', type: 'password' },
+      },
+      async authorize(credentials) {
+        console.log('credentials: ', credentials);
+        try {
+          if (!credentials.username || !credentials.password) {
+            return null;
+          }
+          const user = verifyCredentials(credentials);
+          if (user) {
+            return user;
+          }
+          return null;
+        } catch (error) {
+          console.error('Error during authorization:', error);
+          return null;
         }
       },
     }),
-    Twitter,
-    GitHub,
-   Credentials({
-      // You can specify which fields should be submitted, by adding keys to the `credentials` object.
-      // e.g. domain, username, password, 2FA token, etc.
-      credentials: {
-        email: {},
-        password: {},
-      },
+  ],
 
-
-
-      authorize: async (credentials:{email:string,password:string}) => {
-        let user = null
- 
-        // logic to salt and hash password
-        const pwHash = saltAndHashPassword(credentials.password )
- 
-        // logic to verify if the user exists
-        user = await getUserFromDb(credentials.email, pwHash)
- 
-        if (!user) {
-          // No user found, so this is their first attempt to login
-          // Optionally, this is also the place you could do a user registration
-          throw new Error("Invalid credentials.")
-        }
- 
-        // return user object with their profile data
-        return user
-      },
-    }),  
-  ],  
   callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.role = getRole(user.email as string);
-        token.email = user.email;
-        token.name = user.name;
-        token.image = user.image;
-        token.id = user.id;
+    async session(data: any) {
+      if (data.session.user.role === undefined) {
+        data.session.user.role = (await getRole(data.session.user.email)) + '' || null;
       }
-      return token;
-    },
-    async session({ session, token }: { session: any; token: any }) {
-      session.user = token;
-      return session;
+      !data?.session?.user?.image && (data.session.user.image = data.session.user.image || null);
+      console.log('data.session.user.role: ', data.session.user.role);
+
+      return data.session;
     },
   },
 });

@@ -1,5 +1,6 @@
 import { auth } from '@/app/auth';
 import { NextResponse } from 'next/server';
+// export { auth as middleware } from "@/app/auth"
 
 export async function middleware(req: Request) {
   const session: any = await auth();
@@ -11,7 +12,7 @@ export async function middleware(req: Request) {
   }
 
   // Extract user's role from the session
-  const userRole = session?.user?.role || 'guest';
+  const userRole = session?.user?.role || 'admin';
 
   // Define protected routes and allowed roles
   const rolePermissions: Record<string, string[]> = {
