@@ -12,10 +12,6 @@ const Sidebar: React.FC = async () => {
   const user = session?.user;
   const role = user?.role || '';
 
-  // await connectMongo();
-
-  // const token = await auth();
-
   // Role-based links
   const getLinks = () => {
     switch (role) {
@@ -65,7 +61,7 @@ const Sidebar: React.FC = async () => {
             <Image loading="lazy" src={user.image} alt={`${user.name}'s profile picture`} width={50} height={50} className="border-2 shadow-lg border-border rounded-full" />
           ) : (
             <div className="flex justify-center items-center bg-border rounded-full w-12 h-12">
-              <span className="font-bold text-gray-700 text-lg">{user?.name?.charAt(0)}</span>
+              <span className="font-bold text-gray-700 text-lg">{user?.email?.charAt(0)}</span>
             </div>
           )}
           <span className="group-hover:block hidden mt-2 text-sm">{user?.name}</span>

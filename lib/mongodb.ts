@@ -34,6 +34,13 @@ export async function connectDB() {
   return connection.db(process.env.MONGODB_DB);
 }
 
+
+export async function getUsersModel(){
+  const db =await connectDB();
+  const users = db.collection('logins')
+  return users;
+}
+
 export async function getSchoolModel() {
   const db = await connectDB();
   const schools = db.collection('schools');

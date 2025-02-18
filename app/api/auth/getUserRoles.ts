@@ -1,17 +1,31 @@
-const users = [
-  { email: 'technohmsi2t@gmail.com', role: 'admin' },
-  { email: 'koushiksr19991@gmail.com', role: 'school' },
-  { email: 'koushiksr1999@gmail.com', role: 'assessor' },
-  { email: 'student@example.com', role: 'student' },
-  { email: 'adult@example.com', role: 'adult' },
-];
+import axios from 'axios';
 
-export const getRole = (email: string) => {
-  const user = users.find((user) => user.email === email);
-  return user ? user.role : 'guest'; // Default role
+// Get role of the user
+export const getRole = async (email: string) => {
+  try {
+    const baseUrl = process.env.NEXTAUTH_URL;
+    const role = await axios.get(`${baseUrl}/api/auth/verifyCredentials/getRole?email=${email}`);
+    if (!role.data.success) {
+      return null;
+    }
+    return role.data.role;
+  } catch (error) {
+    console.error('Error during authorization:', error);
+    return null;
+  }
 };
 
-// Email exists or not; if email does not exist, redirect to unauthorized page
-export const checkEmail = (email: string) => {
-  return users.some((user) => user.email === email);
+// verify credentials
+export const verifyCredentials = async ({ username, password }: { username: String; password: String }) => {
+  try {
+    const baseUrl = process.env.NEXTAUTH_URL;
+    const credentials = await axios.post(`${baseUrl}/api/auth/verifyCredentials`, { username, password });
+    if (!credentials.data.success) {
+      return null;
+    }
+    return credentials.data;
+  } catch (error) {
+    console.error('Error during authorization:', error);
+    return null;
+  }
 };
