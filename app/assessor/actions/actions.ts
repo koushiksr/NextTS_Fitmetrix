@@ -2,8 +2,8 @@
 
 import { getAssessmentModel, getStudentModel } from '@/lib/mongodb';
 import { revalidatePath } from 'next/cache';
-import { NextRequest } from 'next/server';
-import { skip } from 'node:test';
+// import { NextRequest } from 'next/server';
+// import { skip } from 'node:test';
 import { z } from 'zod';
 
 // get a list of all assesments by assessor id
@@ -108,4 +108,18 @@ export async function createPost(data: any) {
     console.error('Error creating assessment:', error);
     return { error: 'Failed to create assessment.' };
   }
+}
+
+// get a list of all student ids by school id  project only ids not all then filter
+export async function getStudentIdsBySchoolId(schoolId: string) {
+  const Students = await getStudentModel();
+  let students = (await Students.find({ schoolID: schoolId }).project({ candidateID: true }).toArray()) || [];
+  return students;
+}
+
+//get list of all schoolids by assessor id
+export async function getSchoolIdsByAssessorId(assessorId: string) {
+  const Students = await getStudentModel();
+  let students = (await Students.find({ assessorID: assessorId }).project({ schoolID: true }).toArray()) || [];
+  return students;
 }

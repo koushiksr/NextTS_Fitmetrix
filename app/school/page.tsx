@@ -1,8 +1,8 @@
 import { getSchoolGirlsCount, getSchoolStudentsCount, getSchoolBoysCount } from './actions/actions';
 import { Typography, Grid } from '@mui/material';
-import GroupIcon from '@mui/icons-material/Group';
-import AccessibilityNewIcon from '@mui/icons-material/AccessibilityNew';
-import AccessibilityIcon from '@mui/icons-material/Accessibility';
+// import GroupIcon from '@mui/icons-material/Group';
+// import AccessibilityNewIcon from '@mui/icons-material/AccessibilityNew';
+// import AccessibilityIcon from '@mui/icons-material/Accessibility';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default async function Page() {

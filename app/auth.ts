@@ -20,7 +20,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           if (!credentials.username || !credentials.password) {
             return null;
           }
-          const user = verifyCredentials(credentials);
+          const user = await verifyCredentials(credentials as { username: string; password: string });
           if (user) {
             return user;
           }
